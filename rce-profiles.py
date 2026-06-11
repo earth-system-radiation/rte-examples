@@ -4,15 +4,6 @@ import metpy.calc as mpcalc
 from   metpy.units import units
 import metpy.constants as mpconst
 
-gas_concs = \
-    {"co2": 428e-6, 
-     "o3": 3.6478 * (base.plev*0.01)**0.83209 * np.exp(-(base.plev*0.01) / 11.3515) * 1e-6, 
-     "ch4": 1.94e-6, 
-     "n2o": 0.339e-6,
-     "cfc11": 216e-12,
-     "cfc12": 480e-12,
-    }
-
 def get_pressure_grids(surface_pressure=1000e2, top_pressure=1, num=128):
     r"""Create matching pressures at full-levels and half-levels.
 
@@ -75,47 +66,44 @@ def construct_profile(ps = 1000e2, rh = 0.5,
     Includes water vapor only by default
     """
     play, plev = get_pressure_grids(ps, p0, num)
-    Tlay, _       = create_profile_moist(Ts, rh, play, Tstrat = Tstrat, ps = ps)
-    Tlev, h2o_vmr = create_profile_moist(Ts, rh, plev, Tstrat = Tstrat, ps = ps)
+    Tlay, h2o_vmr = create_profile_moist(Ts, rh, play, Tstrat = Tstrat, ps = ps)
+    Tlev,  _      = create_profile_moist(Ts, rh, plev, Tstrat = Tstrat, ps = ps)
     ds = xr.Dataset(
                 data_vars = dict(
-                      Tlay = (["play"], Tlay),
-                      Tlev = (["plev"], Tlev),
-                      h2o  = (["plev"], h2o_vmr),
-                      Ts   = ([], Ts),
+                      pres_layer = (["layer"], play),
+                      pres_level = (["level"], plev),
+                      temp_layer = (["layer"], Tlay),
+                      temp_level = (["level"], Tlev),
+                      h2o  = (["layer"], h2o_vmr),
+                      surface_temperature   = ([], Ts),
                       ps   = ([], ps), 
                       rh   = ([], rh),
-                
                 ),
-                coords = {
-                    "play": play,
-                    "plev": plev,
-                }
             ) 
-    species = ["h2o"]
     if gas_concs is not None:
         for k, v in gas_concs.items():
             ds[k] = v
-            species.append(k)
-
-    ds["species"] = species
 
     return  ds
 
 base = construct_profile(Ts = 295)
-# Need CO, O2(?)
+# 
+# Concentrations of gases (other than water) required by RRTMGP
+#
 gas_concs = \
     {"co2": 428e-6, 
-     "o3": 3.6478 * (base.plev*0.01)**0.83209 * np.exp(-(base.plev*0.01) / 11.3515) * 1e-6, 
+     "o3": 3.6478 * (base.pres_layer*0.01)**0.83209 * np.exp(-(base.pres_layer*0.01) / 11.3515) * 1e-6, 
      "ch4": 1.94e-6, 
      "n2o": 0.339e-6,
      "cfc11": 216e-12,
      "cfc12": 480e-12,
-    }
+     "o2": 0.2095, 
+     "co": 0,
+     }
 
-profile = construct_profile(Ts = 295)
-f = xr.concat([construct_profile(Ts = Ts, gas_concs = gas_concs) for Ts in np.arange(273, 305)], 
+g = xr.concat([construct_profile(Ts = Ts, gas_concs = gas_concs) for Ts in np.arange(273, 305)], 
           dim = "col")
+
 ####
 # Testing 
 ###
@@ -133,5 +121,6 @@ gas_optics_sw = GasOptics(
     gas_optics_file=GasOpticsFiles.SW_G224
 )
 
-gas_optics_lw.compute(f)
+
+gas_optics_lw.compute(g)
 
