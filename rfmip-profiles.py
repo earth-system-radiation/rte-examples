@@ -1,11 +1,10 @@
 import urllib.request
 import numpy as np 
 import xarray as xr
-from pyrte_rrtmgp.rrtmgp_data_files import (
-    CloudOpticsFiles,
+
+from pyrte_rrtmgp.rrtmgp.data_files import (
     GasOpticsFiles,
 )
-from pyrte_rrtmgp import rte
 from pyrte_rrtmgp.rrtmgp import GasOptics
 
 INPUT_FILE = "https://github.com/earth-system-radiation/rrtmgp-data/raw/refs/heads/main/" +\
@@ -54,23 +53,5 @@ f = f.rename_dims({"site":"col", "expt":"variant"}).\
 
 f = f.drop_vars([v for v in f.variables if v not in var_list])
 
-#
-# Gas optics doesn't work when coordinates are assigned i.e. with 
-# f.assign_coords({"layer":np.arange(1, f.sizes["layer"]+1), 
-#                   "level":np.arange(0.5, f.sizes["level"]),
-#                 })
-#
-fluxes = xr.merge([
-    xr.merge([
-        gas_optics_lw.compute(f, add_to_input = False), 
-        f.surface_emissivity, 
-    ]).rte.solve(add_to_input = False),  
-    xr.merge([
-        gas_optics_sw.compute(f, add_to_input = False), 
-        f.surface_albedo, 
-        f.solar_zenith_angle, 
-    ]).rte.solve(add_to_input = False)
-]) 
-
-f.to_netcdf(OUTPUT_FILE, engine = "h5netcdf",)
+f.to_netcdf(OUTPUT_FILE, engine = "netcdf4",)
 

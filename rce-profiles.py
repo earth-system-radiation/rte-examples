@@ -4,13 +4,6 @@ import metpy.calc as mpcalc
 from   metpy.units import units
 import metpy.constants as mpconst
 
-from pyrte_rrtmgp.rrtmgp_data_files import (
-    CloudOpticsFiles,
-    GasOpticsFiles,
-)
-from pyrte_rrtmgp import rte
-from pyrte_rrtmgp.rrtmgp import GasOptics
-
 OUTPUT_FILE = "rce-states.nc"
 
 def get_pressure_grids(surface_pressure=1000e2, top_pressure=1, num=128):
@@ -114,29 +107,4 @@ gas_concs = \
 f = xr.concat([construct_profile(Ts = Ts, gas_concs = gas_concs) for Ts in np.arange(273, 305)], 
           dim = "col")
 
-####
-# Testing 
-###
-gas_optics_lw = GasOptics(
-    gas_optics_file=GasOpticsFiles.LW_G256, 
-)
-gas_optics_sw = GasOptics(
-    gas_optics_file=GasOpticsFiles.SW_G224,
-)
-
-
-fluxes = xr.merge([
-    xr.merge([
-        gas_optics_lw.compute(f, 
-            add_to_input = False), 
-        f.surface_emissivity, 
-    ]).rte.solve(add_to_input = False),  
-    xr.merge([
-        gas_optics_sw.compute(f, 
-            add_to_input = False), 
-        f.surface_albedo, 
-        f.solar_zenith_angle, 
-    ]).rte.solve(add_to_input = False)
-]) 
-
-f.to_netcdf(OUTPUT_FILE, engine = "h5netcdf",)
+f.to_netcdf(OUTPUT_FILE, engine = "netcdf4",)
