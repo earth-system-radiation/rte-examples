@@ -87,6 +87,7 @@ def construct_profile(ps = 1000e2, rh = 0.5,
                       surface_emissivity = ([], 1.),
                       surface_albedo = ([], 0.),
                       solar_zenith_angle = ([], 0.),
+                      total_solar_irradiance = ([], mpconst.earth_solar_irradiance.m),
                 ),
             ) 
     if gas_concs is not None:

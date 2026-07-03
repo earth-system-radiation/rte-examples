@@ -26,7 +26,7 @@ var_list = list(set(gas_optics_sw.available_gases.union(gas_optics_sw.available_
 state_vars = ["pres_layer", "pres_level", 
               "temp_layer", "temp_level", 
               "surface_temperature", "surface_emissivity", "surface_albedo", 
-              "solar_zenith_angle", 
+              "solar_zenith_angle", "total_solar_irradiance",
               "col", "variant",]
 for v in state_vars: var_list.append(v) 
 
@@ -35,7 +35,7 @@ def transform_files():
 
     f = f.rename_dims({"site":"col", "expt":"variant"}).\
         rename_vars({v:v.split("_GM")[0] for v in f.variables}). \
-        drop_vars(["time", "lat", "lon", "sst", "total_solar_irradiance",]). \
+        drop_vars(["time", "lat", "lon", "sst",]). \
         rename_vars({"expt_label":"variant_label",
                      "water_vapor":"h2o", 
                      "ozone":"o3", 
@@ -44,9 +44,21 @@ def transform_files():
                      "methane":"ch4", 
                      "nitrous_oxide":"n2o", 
                      "oxygen":"n2", 
-                     "nitrogen":"o2", 
-                    }). \
-        drop_attrs()
+                     "nitrogen":"o2",                     
+                    })
+
+    def _parse_units_scalar(units):
+        try:
+            return float(units)
+        except (TypeError, ValueError):
+            return None
+
+    for name in f.variables:
+        scale = _parse_units_scalar(f[name].attrs.get("units"))
+        if scale is not None:
+            f[name] = f[name] * scale
+
+    f = f.drop_attrs()
 
     return f.drop_vars([v for v in f.variables if v not in var_list])
 

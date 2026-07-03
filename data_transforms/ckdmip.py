@@ -1,6 +1,7 @@
 import sys
 import xarray as xr
 from .pooch_config import list_files
+import metpy.constants as mpconst
 
 from pyrte_rrtmgp.rrtmgp.data_files import (
     GasOpticsFiles,
@@ -40,6 +41,7 @@ def transform_files():
 	f["surface_emissivity"] = 1.
 	f["surface_albedo"] = 0. 
 	f["solar_zenith_angle"] = 0. 
+	f["total_solar_irradiance"] = mpconst.earth_solar_irradiance.m
 	#
 	# pyRTE logic for computing top_at_1 is fragile - use only one set of pressures across variants
 	#
