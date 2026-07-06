@@ -32,7 +32,8 @@ for v in state_vars: var_list.append(v)
 
 def transform_files():
     f = xr.open_dataset(list_files("rfmip")[0], decode_cf=False)
-
+    
+    f["total_solar_irradiance"] = f.total_solar_irradiance.mean().values
     f = f.rename_dims({"site":"col", "expt":"variant"}).\
         rename_vars({v:v.split("_GM")[0] for v in f.variables}). \
         drop_vars(["time", "lat", "lon", "sst",]). \

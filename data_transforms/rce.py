@@ -82,12 +82,10 @@ def construct_profile(ps = 1000e2, rh = 0.5,
                         * np.exp(-(play*0.01) / 11.3515) \
                         * 1e-6), 
                       surface_temperature = ([], Ts),
-                      ps   = ([], ps), 
                       rh   = ([], rh),
                       surface_emissivity = ([], 1.),
                       surface_albedo = ([], 0.),
                       solar_zenith_angle = ([], 0.),
-                      total_solar_irradiance = ([], mpconst.earth_solar_irradiance.m),
                 ),
             ) 
     if gas_concs is not None:
@@ -103,9 +101,10 @@ gas_concs = \
      "n2": 0.7808,
      "o2": 0.2095, 
      "co": 0,
-     }
+    }
 
 def create_files():
-    return xr.concat([construct_profile(Ts = Ts, gas_concs = gas_concs) for Ts in np.arange(273, 305)], 
+    ds = xr.concat([construct_profile(Ts = Ts, gas_concs = gas_concs) for Ts in np.arange(273, 305)], 
               dim = "col")
-
+    ds["total_solar_irradiance"] = mpconst.earth_solar_irradiance.m
+    return ds
