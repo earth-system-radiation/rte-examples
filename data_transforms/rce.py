@@ -85,7 +85,7 @@ def construct_profile(ps = 1000e2, rh = 0.5,
                       rh   = ([], rh),
                       surface_emissivity = ([], 1.),
                       surface_albedo = ([], 0.),
-                      solar_zenith_angle = ([], 0.),
+                      solar_zenith_angle = ([], np.acos(2./3.) * 180./np.pi), # https://doi.org/10.1175/JAS-D-13-0392.1
                 ),
             ) 
     if gas_concs is not None:

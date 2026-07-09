@@ -47,6 +47,7 @@ def transform_files():
                      "oxygen":"n2", 
                      "nitrogen":"o2",                     
                     })
+    f["solar_zenith_angle"] = f.solar_zenith_angle.where(f.solar_zenith_angle <= 90., 180. - f.solar_zenith_angle)
     for v in ["solar_zenith_angle", "surface_albedo", "surface_emissivity"]:
       f[v] = f[v].broadcast_like(f.temp_layer.isel(layer=0))
 
