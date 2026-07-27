@@ -44,8 +44,8 @@ def transform_files():
                      "carbon_monoxide":"co", 
                      "methane":"ch4", 
                      "nitrous_oxide":"n2o", 
-                     "oxygen":"n2", 
-                     "nitrogen":"o2",                     
+                     "oxygen":"o2", 
+                     "nitrogen":"n2",                     
                     })
     f["solar_zenith_angle"] = f.solar_zenith_angle.where(f.solar_zenith_angle <= 90., 180. - f.solar_zenith_angle)
     for v in ["solar_zenith_angle", "surface_albedo", "surface_emissivity"]:
