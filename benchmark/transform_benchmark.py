@@ -4,7 +4,7 @@ from pathlib import Path
 import pooch
 import xarray as xr
 
-VERSION = "1.0"
+VERSION = "1.1"
 ARCHIVE_URL = (
     f"https://github.com/m-brath/rte-benchmarks/archive/refs/tags/v{VERSION}.tar.gz"
 )
