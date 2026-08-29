@@ -4,9 +4,9 @@ from pathlib import Path
 import pooch
 import xarray as xr
 
-VERSION = "1.1"
+VERSION = "1.4"
 ARCHIVE_URL = (
-    f"https://github.com/m-brath/rte-benchmarks/archive/refs/tags/v{VERSION}.tar.gz"
+    f"https://github.com/atmtools/rte-benchmarks/archive/refs/tags/v{VERSION}.tar.gz"
 )
 ARCHIVE_NAME = f"rte-benchmarks-v{VERSION}.tar.gz"
 
@@ -58,6 +58,22 @@ def transform_benchmark():
                     ),
                 }
             )
+            if band == "SW":
+                reference = reference.assign(
+                    {
+                        "sw_flux_dir": (
+                            ("variant", "level", "col"),
+                            (-raw["direct_downward_irradiance"])
+                            .transpose("variant", "level", "column")
+                            .values,
+                            {
+                                "units": raw["direct_downward_irradiance"].attrs.get(
+                                    "units", ""
+                                )
+                            },
+                        )
+                    }
+                )
 
             output_path = SCRIPT_DIR / f"arts-{band.lower()}-{case_name}.nc"
             reference.to_netcdf(output_path, engine="netcdf4")
