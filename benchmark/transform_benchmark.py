@@ -40,6 +40,17 @@ def transform_arts_benchmark():
             source_file = sorted(source_dir.glob("Reference_fluxes_Nf*.nc"))[0]
             raw = xr.open_dataset(source_file).load()
 
+            # transform the level axis to match the states file
+            states = xr.open_dataset(SCRIPT_DIR.parent / f"{case_name}-states.nc")
+            if (
+                float(states["pres_level"].isel(level=0, col=0))
+                < float(states["pres_level"].isel(level=-1, col=0))
+            ) != (
+                float(raw["pressure"].isel(variant=0, level=0, column=0))
+                < float(raw["pressure"].isel(variant=0, level=-1, column=0))
+            ):
+                raw = raw.isel(level=slice(None, None, -1))
+
             reference = xr.Dataset(
                 {
                     f"{band.lower()}_flux_up": (
