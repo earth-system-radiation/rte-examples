@@ -4,7 +4,7 @@ from pathlib import Path
 import pooch
 import xarray as xr
 
-VERSION = "1.4"
+VERSION = "1.5"
 ARCHIVE_URL = (
     f"https://github.com/atmtools/rte-benchmarks/archive/refs/tags/v{VERSION}.tar.gz"
 )
@@ -15,7 +15,7 @@ RAW_DIR = SCRIPT_DIR / "raw"
 CASE_NAMES = ("ckdmip", "rce", "rfmip")
 
 
-def transform_benchmark():
+def transform_arts_benchmark():
     RAW_DIR.mkdir(parents=True, exist_ok=True)
 
     # Download and extract the rte-benchmarks archive
@@ -39,6 +39,17 @@ def transform_benchmark():
             source_dir = archive_root / "results" / case_name / band
             source_file = sorted(source_dir.glob("Reference_fluxes_Nf*.nc"))[0]
             raw = xr.open_dataset(source_file).load()
+
+            # transform the level axis to match the states file
+            states = xr.open_dataset(SCRIPT_DIR.parent / f"{case_name}-states.nc")
+            if (
+                float(states["pres_level"].isel(level=0, col=0))
+                < float(states["pres_level"].isel(level=-1, col=0))
+            ) != (
+                float(raw["pressure"].isel(variant=0, level=0, column=0))
+                < float(raw["pressure"].isel(variant=0, level=-1, column=0))
+            ):
+                raw = raw.isel(level=slice(None, None, -1))
 
             reference = xr.Dataset(
                 {
@@ -80,6 +91,6 @@ def transform_benchmark():
 
 
 if __name__ == "__main__":
-    transform_benchmark()
+    transform_arts_benchmark()
 
 # %%
