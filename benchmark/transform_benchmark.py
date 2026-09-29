@@ -4,7 +4,7 @@ from pathlib import Path
 import pooch
 import xarray as xr
 
-VERSION = "1.4"
+VERSION = "1.5"
 ARCHIVE_URL = (
     f"https://github.com/atmtools/rte-benchmarks/archive/refs/tags/v{VERSION}.tar.gz"
 )
@@ -15,7 +15,7 @@ RAW_DIR = SCRIPT_DIR / "raw"
 CASE_NAMES = ("ckdmip", "rce", "rfmip")
 
 
-def transform_benchmark():
+def transform_arts_benchmark():
     RAW_DIR.mkdir(parents=True, exist_ok=True)
 
     # Download and extract the rte-benchmarks archive
@@ -80,6 +80,6 @@ def transform_benchmark():
 
 
 if __name__ == "__main__":
-    transform_benchmark()
+    transform_arts_benchmark()
 
 # %%
